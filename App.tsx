@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { Glossary } from './pages/Glossary';
@@ -18,7 +18,7 @@ function App() {
       <VoiceProvider>
         <FavoritesProvider>
           <HistoryProvider>
-            <BrowserRouter>
+            <HashRouter>
               <Routes>
                 <Route path="/" element={<Layout />}>
                   <Route index element={<Dashboard />} />
@@ -31,7 +31,7 @@ function App() {
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
               </Routes>
-            </BrowserRouter>
+            </HashRouter>
           </HistoryProvider>
         </FavoritesProvider>
       </VoiceProvider>

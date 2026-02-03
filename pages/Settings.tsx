@@ -1,11 +1,10 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useVoice } from '../context/VoiceContext';
 import { characters, Character } from '../data/characters';
 import { GoogleGenAI, Modality } from "@google/genai";
 import { seedDatabase } from '../services/termService';
-import { isSupabaseConfigured } from '../services/supabase';
+import { isSupabaseConfigured, getEnvVar } from '../services/supabase';
 
 // --- Helpers for Audio Decoding (Duplicated from VoiceAssistant to keep files self-contained) ---
 function decode(base64: string) {
@@ -88,7 +87,10 @@ export const Settings = () => {
     setLoadingId(char.id);
 
     try {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const apiKey = getEnvVar('VITE_API_KEY') || getEnvVar('API_KEY');
+        if (!apiKey) throw new Error("API Key missing");
+
+        const ai = new GoogleGenAI({ apiKey });
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-preview-tts",
             contents: [{ parts: [{ text: char.previewText }] }],
@@ -118,6 +120,7 @@ export const Settings = () => {
         setPlayingId(char.id);
     } catch (err) {
         console.error("Preview failed", err);
+        setSeedLogs(prev => [...prev, "Erro no Preview: Verifique a VITE_API_KEY"]);
     } finally {
         setLoadingId(null);
     }

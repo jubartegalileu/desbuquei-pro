@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { TermData } from "../types";
-import { supabase, isSupabaseConfigured } from "./supabase";
+import { supabase, isSupabaseConfigured, getEnvVar } from "./supabase";
 
 // 1. MOCK DATABASE (Fallback if Supabase is offline)
 const localDatabase: Record<string, TermData> = {
@@ -29,7 +29,18 @@ const localDatabase: Record<string, TermData> = {
   }
 };
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper to get AI instance safely
+const getAIClient = () => {
+    const apiKey = getEnvVar('VITE_API_KEY') || getEnvVar('API_KEY');
+    if (!apiKey) {
+        console.error("API Key is missing. Please set VITE_API_KEY in your environment variables.");
+        // Return a mock to prevent immediate crash, calls will fail gracefully later
+        return { models: { generateContent: async () => { throw new Error("API Key missing"); } } } as any;
+    }
+    return new GoogleGenAI({ apiKey });
+};
+
+const ai = getAIClient();
 
 // Helper to normalize IDs (e.g. "React JS" -> "react-js")
 const normalizeId = (text: string) => {
@@ -167,7 +178,7 @@ export const getTermData = async (termId: string): Promise<TermData> => {
     console.error("AI Generation failed:", error);
   }
 
-  throw new Error("Termo não encontrado.");
+  throw new Error("Termo não encontrado ou erro de configuração da API.");
 };
 
 // --- SEEDING UTILITY ---
@@ -192,7 +203,7 @@ export const seedDatabase = async (onProgress: (log: string) => void) => {
             await getTermData(term);
             onProgress(`✅ ${term} processado.`);
         } catch (e) {
-            onProgress(`❌ Erro ao processar ${term}.`);
+            onProgress(`❌ Erro ao processar ${term}. Verifique a API Key.`);
         }
         await new Promise(r => setTimeout(r, 1000));
     }

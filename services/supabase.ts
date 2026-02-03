@@ -1,23 +1,48 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Helper to access environment variables in different environments (Vite/Next/Create-React-App)
-// On Vercel with Vite, variables must start with VITE_ to be exposed to the client.
-const getEnvVar = (key: string) => {
-  // Check import.meta.env (Vite standard)
-  if (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env[key]) {
-    return (import.meta as any).env[key];
-  }
-  // Check process.env (Node/Webpack standard)
-  if (typeof process !== 'undefined' && process.env && process.env[key]) {
-    return process.env[key];
-  }
-  // Fallback for Vercel System variables or direct process.env access
-  if (typeof process !== 'undefined' && process.env) {
-      // Try to find it without VITE_ prefix if strictly needed
-      const rawKey = key.replace('VITE_', '');
-      if (process.env[rawKey]) return process.env[rawKey];
-  }
-  return '';
+// HELPER: Safe access to environment variables
+// Handles Vite (import.meta.env) and standard (process.env)
+// Prevents crashes if import.meta.env is undefined at runtime
+export const getEnvVar = (key: string) => {
+    let value = '';
+
+    // 1. Try Vite's import.meta.env with safe access
+    try {
+        // We check existence before access to prevent "Cannot read properties of undefined"
+        // @ts-ignore
+        if (typeof import.meta !== 'undefined' && import.meta.env) {
+            // Explicitly handle keys to allow Vite's static replacement to work
+            if (key === 'VITE_SUPABASE_URL') {
+                // @ts-ignore
+                value = import.meta.env.VITE_SUPABASE_URL;
+            } else if (key === 'VITE_SUPABASE_ANON_KEY') {
+                // @ts-ignore
+                value = import.meta.env.VITE_SUPABASE_ANON_KEY;
+            } else if (key === 'VITE_API_KEY' || key === 'API_KEY') {
+                // @ts-ignore
+                value = import.meta.env.VITE_API_KEY;
+            } else {
+                // Dynamic access fallback
+                // @ts-ignore
+                value = import.meta.env[key];
+            }
+        }
+    } catch (e) {
+        // Ignore errors during access
+    }
+
+    if (value) return value;
+
+    // 2. Fallback to process.env (Node/Webpack/Legacy)
+    try {
+        if (typeof process !== 'undefined' && process.env) {
+            return process.env[key];
+        }
+    } catch (e) {
+        // Ignore
+    }
+
+    return '';
 };
 
 const supabaseUrl = getEnvVar('VITE_SUPABASE_URL');

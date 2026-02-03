@@ -1,8 +1,8 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleGenAI, LiveServerMessage, Modality, Type, FunctionDeclaration } from '@google/genai';
 import { useVoice } from '../context/VoiceContext';
+import { getEnvVar } from '../services/supabase';
 
 // --- Audio Helper Functions (Encoding/Decoding) ---
 
@@ -156,7 +156,13 @@ export const VoiceAssistant = () => {
     try {
       setStatus('connecting');
       // Create new client for every session to avoid stale state
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const apiKey = getEnvVar('VITE_API_KEY') || getEnvVar('API_KEY');
+      if (!apiKey) {
+         setTranscription(prev => [...prev, "ERRO: API Key não encontrada."]);
+         return;
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
       
       // Initialize Audio Contexts
       inputContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
