@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI DESBUQUEI - Glossário Técnico Inteligente</title>
+    <meta name="description" content="Dicionário técnico com IA para profissionais de negócios. Desbugue termos como Kubernetes, API e React em segundos.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Sofia+Sans+Condensed:wght@300;400;700;800&family=Quicksand:wght@300;400;500;600;700&family=Nunito:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind Configuration (Tokenization) -->
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        // Dynamic Primary Colors
+                        primary: "rgb(var(--color-primary) / <alpha-value>)",
+                        "primary-dark": "rgb(var(--color-primary-dark) / <alpha-value>)", 
+                        accent: "#0891B2",
+                        
+                        // Dynamic Structural Colors (Mapped to CSS Variables)
+                        "night-bg": "rgb(var(--bg-body) / <alpha-value>)", 
+                        "night-panel": "rgb(var(--bg-panel) / <alpha-value>)", 
+                        "night-sidebar": "rgb(var(--bg-sidebar) / <alpha-value>)", 
+                        "night-border": "rgb(var(--border-color) / <alpha-value>)",
+                        
+                        // Glass effects mapped to panel color
+                        "glass-bg": "rgba(var(--bg-panel), 0.7)", 
+                        "glass-border": "rgba(var(--color-primary), 0.1)",
+
+                        // Overriding Slate to be dynamic based on Theme
+                        slate: {
+                            50: "rgb(var(--text-slate-50) / <alpha-value>)",
+                            100: "rgb(var(--text-slate-100) / <alpha-value>)", // Main Titles (White in Dark, Black in Light)
+                            200: "rgb(var(--text-slate-200) / <alpha-value>)",
+                            300: "rgb(var(--text-slate-300) / <alpha-value>)", // Body Text
+                            400: "rgb(var(--text-slate-400) / <alpha-value>)", // Muted Text
+                            500: "rgb(var(--text-slate-500) / <alpha-value>)", // Interactive/Icons
+                            600: "rgb(var(--text-slate-600) / <alpha-value>)",
+                            700: "rgb(var(--text-slate-700) / <alpha-value>)",
+                            800: "rgb(var(--text-slate-800) / <alpha-value>)",
+                            900: "rgb(var(--text-slate-900) / <alpha-value>)",
+                        }
+                    },
+                    fontFamily: {
+                        brand: ["Sofia Sans Condensed", "sans-serif"],
+                        display: ["Quicksand", "sans-serif"],
+                        body: ["Nunito", "sans-serif"],
+                        mono: ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.75rem",
+                        lg: "1.25rem",
+                        xl: "2rem",
+                        full: "9999px"
+                    },
+                    animation: {
+                        'ping-slow': 'ping 3s linear infinite',
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer base {
+            :root {
+                /* Default Primary Color (Cyan) */
+                --color-primary: 34 211 238; 
+                --color-primary-dark: 8 145 178;
+
+                /* Default Theme Variables (Dark Mode) - Initial State to prevent flash */
+                --bg-body: 8 16 25;       /* #081019 */
+                --bg-panel: 14 22 37;     /* #0E1625 */
+                --bg-sidebar: 14 22 37;   /* #0E1625 */
+                --border-color: 30 41 59; /* #1E293B */
+
+                /* Text Colors (Standard Slate mapping for Dark Mode) */
+                --text-slate-50: 248 250 252;
+                --text-slate-100: 241 245 249; /* White text */
+                --text-slate-200: 226 232 240;
+                --text-slate-300: 203 213 225;
+                --text-slate-400: 148 163 184;
+                --text-slate-500: 100 116 139;
+                --text-slate-600: 71 85 105;
+                --text-slate-700: 51 65 85;
+                --text-slate-800: 30 41 59;
+                --text-slate-900: 15 23 42;
+            }
+        }
+
+        @layer utilities {
+            .glass-card {
+                @apply bg-glass-bg backdrop-blur-md border border-night-border transition-all duration-300;
+            }
+            .glass-card:hover {
+                @apply border-primary/30 shadow-lg shadow-primary/5;
+            }
+            .icon-filled {
+                font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            }
+            .material-symbols-outlined {
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            }
+            .ai-panel-float {
+                box-shadow: 0 0 100px -20px rgba(var(--color-primary), 0.15);
+            }
+            /* Custom Scrollbar */
+            ::-webkit-scrollbar { width: 6px; height: 3px; }
+            ::-webkit-scrollbar-track { background: transparent; }
+            ::-webkit-scrollbar-thumb { background: rgb(var(--border-color)); border-radius: 10px; }
+            ::-webkit-scrollbar-thumb:hover { background: rgb(var(--text-slate-600)); }
+        }
+        
+        body {
+            background-color: rgb(var(--bg-body));
+            color: rgb(var(--text-slate-300));
+            /* Subtle radial gradient for depth */
+            background-image: radial-gradient(circle at 50% 0%, rgba(var(--color-primary), 0.05) 0%, transparent 50%);
+            background-attachment: fixed;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.39.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="font-body antialiased">
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

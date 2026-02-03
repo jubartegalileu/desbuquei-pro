@@ -1,0 +1,7 @@
+{
+  "name": "DESBUQUEI PRO",
+  "description": "A sophisticated technical glossary and learning platform for business professionals, featuring AI-assisted explanations, history tracking, and personalization.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
