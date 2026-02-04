@@ -60,18 +60,17 @@ export async function createTerm(termData: TermData): Promise<void> {
     definition: termData.definition.substring(0, 50) + '...',
   });
 
-  const { data, error, status } = await supabase.from('terms').insert({
+  const { error, status } = await supabase.from('terms').insert({
     id: termData.id,
     term: termData.term,
     category: termData.category,
     definition: termData.definition,
     content: termData,
     created_at: new Date().toISOString(),
-  }).select();
+  });
 
   console.log('Resposta completa do Supabase:');
   console.log('  Status:', status);
-  console.log('  Data:', data);
   console.log('  Error:', error);
   console.log('  Error details:', error ? { code: error.code, message: error.message, details: error.details } : 'nenhum');
 
