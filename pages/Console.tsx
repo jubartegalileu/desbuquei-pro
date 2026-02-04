@@ -258,14 +258,18 @@ Return ONLY a valid JSON object (no markdown, no code blocks, no extra text) wit
         relatedTerms: tableData.relatedTerms || []
       };
 
-      await supabaseAdmin.from('terms').upsert({
+      const response = await supabaseAdmin.from('terms').upsert({
         id: finalData.id,
         term: finalData.term,
         category: finalData.category,
         definition: finalData.definition,
-        content: finalData,
+        content: JSON.stringify(finalData),
         created_at: new Date().toISOString()
       });
+
+      if (response.error) {
+        throw new Error(`Erro no Supabase: ${response.error.message}`);
+      }
 
       setFormErrors({ success: `✅ Termo "${finalData.term}" salvo com sucesso no banco!` });
       setTableData({ examples: [], analogies: [], relatedTerms: [], practicalUsage: { title: '', content: '' } });
