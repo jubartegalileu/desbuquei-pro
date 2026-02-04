@@ -52,23 +52,35 @@ export async function createTerm(termData: TermData): Promise<void> {
   }
 
   console.log('Inserindo no Supabase...');
-  const { data, error } = await supabase.from('terms').insert({
+  console.log('Tabela: terms');
+  console.log('Dados:', {
+    id: termData.id,
+    term: termData.term,
+    category: termData.category,
+    definition: termData.definition.substring(0, 50) + '...',
+  });
+
+  const { data, error, status } = await supabase.from('terms').insert({
     id: termData.id,
     term: termData.term,
     category: termData.category,
     definition: termData.definition,
     content: termData,
     created_at: new Date().toISOString(),
-  });
+  }).select();
 
-  console.log('Resposta do Supabase:', { data, error });
+  console.log('Resposta completa do Supabase:');
+  console.log('  Status:', status);
+  console.log('  Data:', data);
+  console.log('  Error:', error);
+  console.log('  Error details:', error ? { code: error.code, message: error.message, details: error.details } : 'nenhum');
 
   if (error) {
-    console.error('Erro ao inserir:', error);
+    console.error('❌ ERRO ao inserir:', error);
     throw new Error(`Erro ao inserir termo: ${error.message}`);
   }
 
-  console.log('Termo inserido com sucesso!');
+  console.log('✅ Termo inserido com sucesso!');
 }
 
 export async function updateTerm(
