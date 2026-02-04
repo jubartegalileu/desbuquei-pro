@@ -278,6 +278,29 @@ Return ONLY a valid JSON object (no markdown, no code blocks, no extra text) wit
     }
   };
 
+  const handleDiscardAndRegenerate = async () => {
+    const termId = normalizeId(tableData.term || '');
+
+    setLoading(true);
+    try {
+      // Tenta deletar do banco de dados se existir
+      if (termId) {
+        await supabaseAdmin.from('terms').delete().eq('id', termId);
+      }
+
+      // Limpa o formulário
+      setTableData({ examples: [], analogies: [], relatedTerms: [], practicalUsage: { title: '', content: '' } });
+
+      // Volta ao modo de busca mantendo o termo no input
+      setMode(null);
+      setFormErrors({ success: `🔄 Termo descartado. Pronto para gerar novamente!` });
+    } catch (error) {
+      setFormErrors({ error: `⚠️ Erro ao descartar: ${error instanceof Error ? error.message : 'Desconhecido'}` });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // SECTION 2: JSON Raw Import
   const handleJsonChange = (value: string) => {
     setJsonInput(value);
@@ -709,14 +732,23 @@ Return ONLY a valid JSON object (no markdown, no code blocks, no extra text) wit
                 />
               </div>
 
-              {/* Botão Enviar */}
-              <button
-                onClick={handleSaveTerm}
-                disabled={loading}
-                className="w-full px-6 py-4 bg-cyan-400 text-[#081019] font-bold rounded-full hover:shadow-[0_0_20px_-5px_#22d3ee] transition-all duration-300 disabled:opacity-50 text-lg"
-              >
-                {loading ? '⏳ Salvando...' : '📤 Enviar para o Banco de Dados'}
-              </button>
+              {/* Botões de Ação */}
+              <div className="flex gap-3">
+                <button
+                  onClick={handleDiscardAndRegenerate}
+                  disabled={loading}
+                  className="flex-1 px-6 py-4 bg-rose-500/20 border border-rose-500/50 text-rose-400 font-bold rounded-full hover:bg-rose-500/30 transition-all duration-300 disabled:opacity-50 text-lg"
+                >
+                  {loading ? '⏳...' : '❌ Descartar e Regenerar'}
+                </button>
+                <button
+                  onClick={handleSaveTerm}
+                  disabled={loading}
+                  className="flex-1 px-6 py-4 bg-cyan-400 text-[#081019] font-bold rounded-full hover:shadow-[0_0_20px_-5px_#22d3ee] transition-all duration-300 disabled:opacity-50 text-lg"
+                >
+                  {loading ? '⏳ Salvando...' : '📤 Enviar para o Banco de Dados'}
+                </button>
+              </div>
             </div>
           )}
         </section>
