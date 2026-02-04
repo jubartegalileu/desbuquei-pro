@@ -214,8 +214,6 @@ Return ONLY a valid JSON object (no markdown, no code blocks, no extra text) wit
       setLoading(true);
       setFormErrors({ search: '⏳ Atualizando com OpenAI...' });
 
-      const ai = getAIClient();
-
       let prompt = '';
       if (field === 'definition') {
         prompt = `Provide a clear technical definition for "${tableData.term}". Return only the definition text, no quotes, no markdown.`;
