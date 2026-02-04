@@ -7,6 +7,7 @@ import { TermDetail } from './pages/TermDetail';
 import { History } from './pages/History';
 import { Favorites } from './pages/Favorites';
 import { Settings } from './pages/Settings';
+import { Upload } from './pages/Upload';
 import { VoiceProvider } from './context/VoiceContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { FavoritesProvider } from './context/FavoritesContext';
@@ -28,6 +29,7 @@ function App() {
                   <Route path="history" element={<History />} />
                   <Route path="favorites" element={<Favorites />} />
                   <Route path="settings" element={<Settings />} />
+                  <Route path="upload" element={<Upload />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
               </Routes>

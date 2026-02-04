@@ -3,8 +3,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useVoice } from '../context/VoiceContext';
 import { characters, Character } from '../data/characters';
 import { GoogleGenAI, Modality } from "@google/genai";
-import { seedDatabase } from '../services/termService';
-import { isSupabaseConfigured, getEnvVar } from '../services/supabase';
+import { getEnvVar } from '../services/supabase';
 
 // --- Helpers for Audio Decoding (Duplicated from VoiceAssistant to keep files self-contained) ---
 function decode(base64: string) {
@@ -43,12 +42,7 @@ export const Settings = () => {
   // Audio Preview State
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
-  
-  // Database Seeding State
-  const [seeding, setSeeding] = useState(false);
-  const [seedLogs, setSeedLogs] = useState<string[]>([]);
-  const logsEndRef = useRef<HTMLDivElement>(null);
-  
+
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
 
@@ -59,12 +53,6 @@ export const Settings = () => {
     };
   }, []);
 
-  // Auto-scroll logs
-  useEffect(() => {
-    if (logsEndRef.current) {
-        logsEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [seedLogs]);
 
   const stopAudio = () => {
     if (sourceRef.current) {
@@ -126,19 +114,6 @@ export const Settings = () => {
     }
   };
 
-  const handleSeedDatabase = async () => {
-    if (seeding) return;
-    setSeeding(true);
-    setSeedLogs(["Iniciando processo..."]);
-    
-    await seedDatabase((log) => {
-        setSeedLogs(prev => [...prev, log]);
-    });
-    
-    setSeeding(false);
-  };
-
-  const hasSupabase = isSupabaseConfigured();
 
   return (
     <div className="max-w-5xl mx-auto p-6 lg:p-12 pb-32">
@@ -224,69 +199,6 @@ export const Settings = () => {
           </div>
         </section>
 
-        {/* Admin / Database Hydration Section */}
-        <section className="hidden md:flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
-            <div className="flex items-center gap-3 pb-4 border-b border-night-border/50">
-                <span className="material-symbols-outlined text-emerald-400 text-2xl">database</span>
-                <h3 className="text-2xl font-bold font-display text-slate-100">Banco de Conhecimento</h3>
-            </div>
-            
-            <div className="glass-card rounded-2xl p-8 border-night-border bg-night-panel/30">
-                <div className="flex flex-col md:flex-row gap-8 items-start">
-                    <div className="flex-1">
-                        <h4 className="text-lg font-bold text-slate-200 mb-2">Hidratação Automática (Seed)</h4>
-                        <p className="text-slate-400 text-sm leading-relaxed mb-4">
-                            Esta ferramenta usa a IA para gerar definições de 20 termos essenciais (Kubernetes, Docker, CI/CD...) 
-                            e salvá-los no seu banco Supabase. Isso evita que a IA seja consultada repetidamente para termos comuns.
-                        </p>
-                        
-                        {!hasSupabase && (
-                            <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-400 text-xs font-mono mb-4 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-base">warning</span>
-                                Supabase não configurado. Verifique SUPABASE_URL e KEY.
-                            </div>
-                        )}
-
-                        <button 
-                            onClick={handleSeedDatabase}
-                            disabled={seeding || !hasSupabase}
-                            className={`px-6 py-3 rounded-xl font-bold flex items-center gap-3 transition-all ${
-                                seeding 
-                                ? 'bg-night-border text-slate-500 cursor-not-allowed' 
-                                : hasSupabase
-                                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50'
-                                    : 'bg-night-border text-slate-600 cursor-not-allowed'
-                            }`}
-                        >
-                            {seeding ? (
-                                <>
-                                    <div className="size-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                                    <span>Processando Carga...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <span className="material-symbols-outlined">cloud_download</span>
-                                    <span>Popular Banco de Dados</span>
-                                </>
-                            )}
-                        </button>
-                    </div>
-
-                    {/* Terminal Logs */}
-                    <div className="w-full md:w-1/2 h-48 bg-black/40 rounded-lg border border-night-border p-4 font-mono text-xs overflow-y-auto">
-                        <div className="flex flex-col gap-1">
-                            {seedLogs.length === 0 && <span className="text-slate-600 italic">// Logs de processamento aparecerão aqui...</span>}
-                            {seedLogs.map((log, i) => (
-                                <span key={i} className={`${log.includes('✅') ? 'text-emerald-400' : log.includes('❌') || log.includes('ERRO') ? 'text-rose-400' : 'text-slate-400'}`}>
-                                    {log}
-                                </span>
-                            ))}
-                            <div ref={logsEndRef}></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
       </div>
     </div>
   );
