@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { GoogleGenAI } from '@google/genai';
 import { getEnvVar } from '../services/supabase';
 import { supabaseAdmin } from '../services/supabase';
 import { TermData } from '../types';
@@ -20,7 +19,6 @@ export const Console = () => {
     practicalUsage: { title: '', content: '' }
   });
   const [formErrors, setFormErrors] = useState<FormErrors>({});
-  const [waitTime, setWaitTime] = useState(0);
 
   // ========== SECTION 2: JSON RAW IMPORT ==========
   const [jsonInput, setJsonInput] = useState(JSON.stringify({
@@ -70,10 +68,30 @@ export const Console = () => {
 
   // ========== FUNCTIONS ==========
 
-  const getAIClient = () => {
-    const apiKey = getEnvVar('VITE_API_KEY') || getEnvVar('API_KEY');
-    if (!apiKey) throw new Error('API Key missing');
-    return new GoogleGenAI({ apiKey });
+  const callOpenAI = async (prompt: string): Promise<string> => {
+    const apiKey = getEnvVar('OPENAI_API_KEY');
+    if (!apiKey) throw new Error('OpenAI API Key missing');
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'OpenAI API error');
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
   };
 
   const normalizeId = (term: string): string => {
@@ -95,16 +113,8 @@ export const Console = () => {
     if (loading) return; // Evita múltiplas cliques
 
     setLoading(true);
-    setFormErrors({ search: '⏳ Aguardando 30 segundos antes da requisição...' });
+    setFormErrors({ search: '⏳ Processando com OpenAI...' });
     const normalizedId = normalizeId(searchTerm);
-
-    // Delay de 30 segundos para evitar rate limiting do Google
-    for (let i = 30; i > 0; i--) {
-      setWaitTime(i);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    setWaitTime(0);
-    setFormErrors({});
 
     try {
       // 1️⃣ Try Supabase
@@ -122,11 +132,10 @@ export const Console = () => {
         return;
       }
 
-      // 2️⃣ Call Gemini AI
-      const ai = getAIClient();
+      // 2️⃣ Call OpenAI GPT
       const prompt = `You are a technical glossary expert. Generate a comprehensive definition for the technical term "${searchTerm}".
 
-Return ONLY a valid JSON object (no markdown, no code blocks) with this exact structure:
+Return ONLY a valid JSON object (no markdown, no code blocks, no extra text) with this exact structure:
 {
   "term": "The term name",
   "fullTerm": "The full expanded term",
@@ -150,60 +159,17 @@ Return ONLY a valid JSON object (no markdown, no code blocks) with this exact st
   "relatedTerms": ["Term1", "Term2", "Term3", "Term4"]
 }`;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseSchema: {
-            type: 'object',
-            properties: {
-              term: { type: 'string' },
-              fullTerm: { type: 'string' },
-              category: { type: 'string' },
-              definition: { type: 'string' },
-              phonetic: { type: 'string' },
-              slang: { type: 'string' },
-              translation: { type: 'string' },
-              examples: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    title: { type: 'string' },
-                    description: { type: 'string' }
-                  }
-                }
-              },
-              analogies: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    title: { type: 'string' },
-                    description: { type: 'string' }
-                  }
-                }
-              },
-              practicalUsage: {
-                type: 'object',
-                properties: {
-                  title: { type: 'string' },
-                  content: { type: 'string' }
-                }
-              },
-              relatedTerms: {
-                type: 'array',
-                items: { type: 'string' }
-              }
-            }
-          }
-        }
-      });
+      const aiResponse = await callOpenAI(prompt);
 
-      const aiData = response.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!aiData) throw new Error('No response from AI');
+      // Limpar JSON se vier com markdown
+      let cleanJson = aiResponse;
+      if (cleanJson.includes('```json')) {
+        cleanJson = cleanJson.split('```json')[1].split('```')[0];
+      } else if (cleanJson.includes('```')) {
+        cleanJson = cleanJson.split('```')[1].split('```')[0];
+      }
 
-      const parsedData = JSON.parse(aiData);
+      const parsedData = JSON.parse(cleanJson.trim());
       setTableData({
         ...parsedData,
         id: normalizedId
@@ -245,35 +211,22 @@ Return ONLY a valid JSON object (no markdown, no code blocks) with this exact st
 
     try {
       setLoading(true);
-      setFormErrors({ search: '⏳ Aguardando 30 segundos antes de atualizar...' });
-
-      // Delay de 30 segundos para evitar rate limiting do Google
-      for (let i = 30; i > 0; i--) {
-        setWaitTime(i);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      setWaitTime(0);
-      setFormErrors({});
+      setFormErrors({ search: '⏳ Atualizando com OpenAI...' });
 
       const ai = getAIClient();
 
       let prompt = '';
       if (field === 'definition') {
-        prompt = `Provide a clear technical definition for "${tableData.term}". Return only the definition text, no quotes.`;
+        prompt = `Provide a clear technical definition for "${tableData.term}". Return only the definition text, no quotes, no markdown.`;
       } else if (field === 'phonetic') {
-        prompt = `How to pronounce "${tableData.term}" in English? Return only the phonetic pronunciation, no quotes.`;
+        prompt = `How to pronounce "${tableData.term}" in English? Return only the phonetic pronunciation, no quotes, no markdown.`;
       } else if (field === 'translation') {
-        prompt = `Translate "${tableData.term}" to Portuguese. Return only the translation, no quotes.`;
+        prompt = `Translate "${tableData.term}" to Portuguese. Return only the translation, no quotes, no markdown.`;
       }
 
       if (prompt) {
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.0-flash',
-          contents: [{ parts: [{ text: prompt }] }]
-        });
-
-        const result = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        handleTableChange(field, result.replace(/^"|"$/g, ''));
+        const result = await callOpenAI(prompt);
+        handleTableChange(field, result.replace(/^"|"$/g, '').trim());
         setFormErrors({ success: `✅ Campo "${field}" atualizado!` });
       }
     } catch (error) {
