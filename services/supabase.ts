@@ -47,10 +47,12 @@ export const getEnvVar = (key: string) => {
 
 const supabaseUrl = getEnvVar('VITE_SUPABASE_URL');
 const supabaseKey = getEnvVar('VITE_SUPABASE_ANON_KEY');
+const supabaseServiceKey = getEnvVar('SUPABASE_SERVICE_ROLE_KEY');
 
 console.log('=== SUPABASE CONFIG ===');
 console.log('VITE_SUPABASE_URL:', supabaseUrl ? '✅ Carregada' : '❌ NÃO carregada');
 console.log('VITE_SUPABASE_ANON_KEY:', supabaseKey ? '✅ Carregada' : '❌ NÃO carregada');
+console.log('SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? '✅ Carregada' : '❌ NÃO carregada');
 console.log('URL valor:', supabaseUrl);
 console.log('KEY valor:', supabaseKey ? supabaseKey.substring(0, 20) + '...' : 'vazio');
 
@@ -63,11 +65,16 @@ export const isSupabaseConfigured = () => {
 // Create a single supabase client for interacting with your database
 export const supabase = isSupabaseConfigured()
     ? createClient(supabaseUrl, supabaseKey)
-    : { 
+    : {
         // Mock client to prevent crashes if imported but not configured
-        from: () => ({ 
+        from: () => ({
             select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
             insert: () => Promise.resolve({ error: null }),
             upsert: () => Promise.resolve({ error: null })
-        }) 
+        })
       } as any;
+
+// Admin client with service role key for bypassing RLS
+export const supabaseAdmin = isSupabaseConfigured() && supabaseServiceKey
+    ? createClient(supabaseUrl, supabaseServiceKey)
+    : supabase;
