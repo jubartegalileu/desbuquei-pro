@@ -91,9 +91,14 @@ export const Console = () => {
       return;
     }
 
+    if (loading) return; // Evita múltiplas cliques
+
     setLoading(true);
     setFormErrors({});
     const normalizedId = normalizeId(searchTerm);
+
+    // Pequeno delay para evitar rate limiting
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     try {
       // 1️⃣ Try Supabase
@@ -200,8 +205,8 @@ Return ONLY a valid JSON object (no markdown, no code blocks) with this exact st
       setMode('table');
       setFormErrors({ success: `✨ Gerado por IA! Revise os dados abaixo` });
     } catch (error) {
-      console.error('Search error:', error);
-      setFormErrors({ search: `❌ Erro: ${error instanceof Error ? error.message : 'Desconhecido'}` });
+      const errorMsg = error instanceof Error ? error.message : 'Desconhecido';
+      setFormErrors({ search: `❌ Erro: ${errorMsg}` });
     } finally {
       setLoading(false);
     }
@@ -230,9 +235,14 @@ Return ONLY a valid JSON object (no markdown, no code blocks) with this exact st
   };
 
   const handleRefreshField = async (field: string) => {
-    // Regenera apenas um campo específico
+    if (loading) return; // Evita múltiplas cliques
+
     try {
       setLoading(true);
+
+      // Delay para evitar rate limiting
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       const ai = getAIClient();
 
       let prompt = '';
