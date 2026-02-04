@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured } from './supabase';
+import { supabaseAdmin, isSupabaseConfigured } from './supabase';
 import { TermData } from '../types';
 
 export async function listAllTerms(filters?: {
@@ -11,7 +11,7 @@ export async function listAllTerms(filters?: {
     throw new Error('Supabase não configurado');
   }
 
-  let query = supabase.from('terms').select('*');
+  let query = supabaseAdmin.from('terms').select('*');
 
   if (filters?.category) {
     query = query.eq('category', filters.category);
@@ -60,7 +60,7 @@ export async function createTerm(termData: TermData): Promise<void> {
     definition: termData.definition.substring(0, 50) + '...',
   });
 
-  const { error, status } = await supabase.from('terms').insert({
+  const { error, status } = await supabaseAdmin.from('terms').insert({
     id: termData.id,
     term: termData.term,
     category: termData.category,
@@ -91,7 +91,7 @@ export async function updateTerm(
   }
 
   // Buscar termo atual
-  const { data: currentTerm } = await supabase
+  const { data: currentTerm } = await supabaseAdmin
     .from('terms')
     .select('content')
     .eq('id', id)
@@ -104,7 +104,7 @@ export async function updateTerm(
   // Merge com dados novos
   const updated = { ...currentTerm.content, ...termData };
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('terms')
     .update({
       term: updated.term,
@@ -122,7 +122,7 @@ export async function deleteTerm(id: string): Promise<void> {
     throw new Error('Supabase não configurado');
   }
 
-  const { error } = await supabase.from('terms').delete().eq('id', id);
+  const { error } = await supabaseAdmin.from('terms').delete().eq('id', id);
 
   if (error) throw error;
 }
@@ -132,7 +132,7 @@ export async function countTerms(filters?: {
 }): Promise<number> {
   if (!isSupabaseConfigured()) return 0;
 
-  let query = supabase
+  let query = supabaseAdmin
     .from('terms')
     .select('id', { count: 'exact', head: true });
 
