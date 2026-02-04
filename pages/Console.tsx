@@ -69,7 +69,7 @@ export const Console = () => {
   // ========== FUNCTIONS ==========
 
   const callOpenAI = async (prompt: string): Promise<string> => {
-    const apiKey = getEnvVar('OPENAI_API_KEY');
+    const apiKey = getEnvVar('VITE_OPENAI_API_KEY');
     if (!apiKey) throw new Error('OpenAI API Key missing');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
