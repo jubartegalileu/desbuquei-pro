@@ -518,7 +518,7 @@ const TermsTableComponent: React.FC<TermsTableProps> = ({
                     {term.category}
                   </td>
                   <td className="px-4 py-3 text-slate-400 text-sm truncate max-w-md">
-                    {term.definition.substring(0, 80)}...
+                    {term.definition ? term.definition.substring(0, 80) + '...' : 'N/A'}
                   </td>
                   <td className="px-4 py-3 text-right space-x-2">
                     <button
