@@ -108,7 +108,6 @@ export const Settings = () => {
         setPlayingId(char.id);
     } catch (err) {
         console.error("Preview failed", err);
-        setSeedLogs(prev => [...prev, "Erro no Preview: Verifique a VITE_API_KEY"]);
     } finally {
         setLoadingId(null);
     }
