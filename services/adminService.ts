@@ -44,11 +44,15 @@ export async function listAllTerms(filters?: {
 }
 
 export async function createTerm(termData: TermData): Promise<void> {
+  console.log('createTerm chamado com:', termData);
+
   if (!isSupabaseConfigured()) {
+    console.error('Supabase não configurado');
     throw new Error('Supabase não configurado');
   }
 
-  const { error } = await supabase.from('terms').insert({
+  console.log('Inserindo no Supabase...');
+  const { data, error } = await supabase.from('terms').insert({
     id: termData.id,
     term: termData.term,
     category: termData.category,
@@ -57,7 +61,14 @@ export async function createTerm(termData: TermData): Promise<void> {
     created_at: new Date().toISOString(),
   });
 
-  if (error) throw error;
+  console.log('Resposta do Supabase:', { data, error });
+
+  if (error) {
+    console.error('Erro ao inserir:', error);
+    throw new Error(`Erro ao inserir termo: ${error.message}`);
+  }
+
+  console.log('Termo inserido com sucesso!');
 }
 
 export async function updateTerm(

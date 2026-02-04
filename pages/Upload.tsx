@@ -154,16 +154,24 @@ export const Upload = () => {
         <TermFormComponent
           term={editingTerm}
           onSave={async (termData) => {
+            console.log('onSave chamado no painel admin com:', termData);
             try {
               if (editingTerm) {
+                console.log('Atualizando termo...');
                 await updateTerm(editingTerm.id, termData);
+                console.log('Termo atualizado com sucesso!');
               } else {
+                console.log('Criando novo termo...');
                 await createTerm(termData);
+                console.log('Novo termo criado com sucesso!');
               }
+              console.log('Recarregando lista de termos...');
               await loadTerms();
               setShowForm(false);
               setEditingTerm(null);
+              alert('Termo salvo com sucesso!');
             } catch (err) {
+              console.error('Erro ao salvar:', err);
               alert('Erro ao salvar termo: ' + (err as Error).message);
             }
           }}
@@ -229,6 +237,7 @@ const TermFormComponent: React.FC<TermFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('handleSubmit chamado');
 
     if (!formData.id || !formData.term || !formData.definition) {
       alert('Preencha os campos obrigatórios: ID, Termo e Definição');
@@ -236,8 +245,13 @@ const TermFormComponent: React.FC<TermFormProps> = ({
     }
 
     setSaving(true);
+    console.log('Chamando onSave com dados:', formData);
     try {
       await onSave(formData);
+      console.log('Sucesso ao salvar!');
+    } catch (error) {
+      console.error('Erro no handleSubmit:', error);
+      alert('Erro ao salvar: ' + (error as Error).message);
     } finally {
       setSaving(false);
     }
