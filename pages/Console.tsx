@@ -261,9 +261,17 @@ Return ONLY a valid JSON object (no markdown, no code blocks, no extra text) wit
       const response = await supabaseAdmin.from('terms').upsert({
         id: finalData.id,
         term: finalData.term,
+        fullTerm: finalData.fullTerm,
         category: finalData.category,
         definition: finalData.definition,
-        content: JSON.stringify(finalData),
+        phonetic: finalData.phonetic,
+        slang: finalData.slang,
+        translation: finalData.translation,
+        examples: finalData.examples,
+        analogies: finalData.analogies,
+        practicalUsage: finalData.practicalUsage,
+        relatedTerms: finalData.relatedTerms,
+        content: finalData,
         created_at: new Date().toISOString()
       });
 
