@@ -47,7 +47,7 @@ export const getEnvVar = (key: string) => {
 
 const supabaseUrl = getEnvVar('VITE_SUPABASE_URL');
 const supabaseKey = getEnvVar('VITE_SUPABASE_ANON_KEY');
-const supabaseServiceKey = getEnvVar('SUPABASE_SERVICE_ROLE_KEY');
+const supabaseServiceKey = getEnvVar('VITE_SUPABASE_SERVICE_ROLE_KEY');
 
 console.log('=== SUPABASE CONFIG ===');
 console.log('VITE_SUPABASE_URL:', supabaseUrl ? '✅ Carregada' : '❌ NÃO carregada');
