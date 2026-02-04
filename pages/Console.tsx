@@ -20,6 +20,7 @@ export const Console = () => {
     practicalUsage: { title: '', content: '' }
   });
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [waitTime, setWaitTime] = useState(0);
 
   // ========== SECTION 2: JSON RAW IMPORT ==========
   const [jsonInput, setJsonInput] = useState(JSON.stringify({
@@ -94,11 +95,16 @@ export const Console = () => {
     if (loading) return; // Evita múltiplas cliques
 
     setLoading(true);
-    setFormErrors({});
+    setFormErrors({ search: '⏳ Aguardando 30 segundos antes da requisição...' });
     const normalizedId = normalizeId(searchTerm);
 
-    // Pequeno delay para evitar rate limiting
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Delay de 30 segundos para evitar rate limiting do Google
+    for (let i = 30; i > 0; i--) {
+      setWaitTime(i);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    setWaitTime(0);
+    setFormErrors({});
 
     try {
       // 1️⃣ Try Supabase
@@ -239,9 +245,15 @@ Return ONLY a valid JSON object (no markdown, no code blocks) with this exact st
 
     try {
       setLoading(true);
+      setFormErrors({ search: '⏳ Aguardando 30 segundos antes de atualizar...' });
 
-      // Delay para evitar rate limiting
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Delay de 30 segundos para evitar rate limiting do Google
+      for (let i = 30; i > 0; i--) {
+        setWaitTime(i);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      setWaitTime(0);
+      setFormErrors({});
 
       const ai = getAIClient();
 
