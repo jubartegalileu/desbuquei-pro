@@ -48,8 +48,16 @@ export const getEnvVar = (key: string) => {
 const supabaseUrl = getEnvVar('VITE_SUPABASE_URL');
 const supabaseKey = getEnvVar('VITE_SUPABASE_ANON_KEY');
 
+console.log('=== SUPABASE CONFIG ===');
+console.log('VITE_SUPABASE_URL:', supabaseUrl ? '✅ Carregada' : '❌ NÃO carregada');
+console.log('VITE_SUPABASE_ANON_KEY:', supabaseKey ? '✅ Carregada' : '❌ NÃO carregada');
+console.log('URL valor:', supabaseUrl);
+console.log('KEY valor:', supabaseKey ? supabaseKey.substring(0, 20) + '...' : 'vazio');
+
 export const isSupabaseConfigured = () => {
-    return !!supabaseUrl && !!supabaseKey;
+    const configured = !!supabaseUrl && !!supabaseKey;
+    console.log('isSupabaseConfigured():', configured ? '✅ SIM' : '❌ NÃO');
+    return configured;
 }
 
 // Create a single supabase client for interacting with your database
